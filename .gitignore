@@ -4,6 +4,9 @@ input-PSD/*
 output-PNG/*
 !output-PNG/.gitkeep
 
+# 環境設定
+.env
+
 # 一時ファイル
 dl*_fresh.png
 alpha_test*.png

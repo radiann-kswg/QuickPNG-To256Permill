@@ -20,10 +20,21 @@ PSD画像（72dpi）をカンバスpx数25.6%の透過PNG（350dpiメタデー�
 
 ```
 CLAUDE.md                 # Claude向けパイプライン定義（本体）
+.env                      # 変換パラメータ（入出力dpi・縮小率）
 scripts/local_fallback.sh # ImageMagickのみのフォールバック
 input-PSD/                # 入力（git管理外）
 output-PNG/               # 出力（git管理外）
 ```
+
+## 設定（.env）
+
+| 変数 | 既定値 | 意味 |
+|---|---|---|
+| `INPUT_DPI` | `72` | 入力PSDの想定dpi（不一致なら警告） |
+| `OUTPUT_DPI` | `350` | 出力PNGへ付与するdpiメタデータ |
+| `SCALE_PERCENT` | `25.6` | カンバスpx縮小率(%)。25.6 = 256‰ |
+
+Claudeへの依頼・フォールバックスクリプトの両方がこの値を参照します。
 
 ## ライセンス
 

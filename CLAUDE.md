@@ -2,17 +2,27 @@
 
 ## 目的
 
-`input-PSD/` の PSD（72dpi）を、カンバスpx数を元の **25.6%** に縮小した**透過PNG（350dpiメタデータ付き）**として `output-PNG/` へ出力する。
+`input-PSD/` の PSD（既定 72dpi）を、カンバスpx数を元の **`SCALE_PERCENT`%（既定 25.6%）** に縮小した**透過PNG（`OUTPUT_DPI` dpiメタデータ付き、既定 350）**として `output-PNG/` へ出力する。パラメータは `.env` で設定する（下記）。
 
 ## 返答言語
 
 チャットでの返答は必ず日本語。
 
+## 設定（.env）
+
+**作業開始時に必ずリポジトリ直下の `.env` を読み**、以下の値をパイプライン全体（目標px計算・DPI付与・検証）に反映する。`.env` が無い場合は既定値を使う。
+
+```
+INPUT_DPI=72       # 入力PSDの想定dpi（実ファイルと不一致なら警告して続行）
+OUTPUT_DPI=350     # 出力PNGへ付与するdpiメタデータ
+SCALE_PERCENT=25.6 # カンバスpx縮小率(%)。25.6 = 256‰
+```
+
 ## 出力要件（すべて必須）
 
-- 寸法: `round(0.256 × 元のW/H)` px（±1pxの丸め差は許容）
+- 寸法: `round(SCALE_PERCENT/100 × 元のW/H)` px（±1pxの丸め差は許容）
 - アルファ: RGBA透過を必ず保持（背景が白に合成されていたら失敗 → やり直し）
-- DPI: 350 PixelsPerInch のメタデータ
+- DPI: `OUTPUT_DPI` PixelsPerInch のメタデータ
 - ファイル名: 元PSDのベース名を維持（`.psd` → `.png`）
 
 ## 推奨パイプライン: Adobeハイブリッド（2026-07-10 全11件で検証済み）
@@ -28,9 +38,9 @@
    - 返却された transfer URL へ `curl -s -L -X PUT -H "Content-Type: image/png" --data-binary @full.png`（`-L` 必須: 308リダイレクトされる）
    - `asset_finalize_file_upload`（`transfer_document` は返却値を**丸ごと**渡す）
 4. `image_crop_and_resize({imageURI: presignedAssetUrl, options: {fit: "pad", output: {width, height}}, outputFileType: "png"})`
-   - width/height = `round(0.256 × 元px)`
+   - width/height = `round(SCALE_PERCENT/100 × 元px)`
 5. 出力URL（`photoshop-api.adobe.io/v2/short-url/...`）をダウンロード
-6. ローカル: `convert out.png -units PixelsPerInch -density 350 PNG32:final.png` → `output-PNG/` へ
+6. ローカル: `convert out.png -units PixelsPerInch -density ${OUTPUT_DPI} PNG32:final.png` → `output-PNG/` へ
 7. 検証チェックリスト（下記）を全件実施
 
 複数ファイルはステップ3〜5の各段階を並列バッチで実行（11件同時まで実績あり）。20件超の大量バッチはAdobeコネクタ非対応。
@@ -54,8 +64,9 @@
 
 - PIL で `Image.open(f); im.load()` が通る（**ダウンロード切断の検出**。identify/fileのヘッダ確認では検出不可）
 - `mode=RGBA` かつ、元PSDの背景が透明なら角ピクセルの alpha=0
-- 寸法が `round(0.256×元)` ±1px
-- DPIメタデータ ≈ 350
+- 寸法が `round(SCALE_PERCENT/100 × 元)` ±1px
+- DPIメタデータ ≈ `OUTPUT_DPI`
+- 入力PSDのdpiが `INPUT_DPI` と一致するか（不一致は警告のみ、処理は続行）
 
 ## 既知の落とし穴
 
@@ -67,10 +78,10 @@
 
 ## フォールバック: ImageMagickのみ（Adobe不通時）
 
-`scripts/local_fallback.sh` を実行。中身は実質:
+`scripts/local_fallback.sh` を実行（`.env` を自動で読み込む）。中身は実質:
 
 ```bash
-convert "input.psd[0]" -resize 25.6% -units PixelsPerInch -density 350 "PNG32:output.png"
+convert "input.psd[0]" -resize ${SCALE_PERCENT}% -units PixelsPerInch -density ${OUTPUT_DPI} "PNG32:output.png"
 ```
 
 ## ライセンス
