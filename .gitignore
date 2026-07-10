@@ -1,0 +1,15 @@
+# 画像アセットはgit管理外（MIT対象外）
+input-PSD/*
+!input-PSD/.gitkeep
+output-PNG/*
+!output-PNG/.gitkeep
+
+# 一時ファイル
+dl*_fresh.png
+alpha_test*.png
+*.tmp
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
