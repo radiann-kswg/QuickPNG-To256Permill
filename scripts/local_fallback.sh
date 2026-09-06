@@ -34,12 +34,12 @@ for f in input-PSD/*.psd input-PSD/*.PSD; do
   base=$(basename "$f")
   base=${base%.*}
   # 入力dpiの検証（想定と異なれば警告のみ）
-  src_dpi=$(identify -units PixelsPerInch -format "%x" "${f}[0]" 2>/dev/null | cut -d. -f1 || true)
+  src_dpi=$(magick identify -units PixelsPerInch -format "%x" "${f}[0]" 2>/dev/null | cut -d. -f1 || true)
   if [ -n "${src_dpi}" ] && [ "${src_dpi}" != "${INPUT_DPI}" ]; then
     echo "warn: ${base}: 入力dpi=${src_dpi}（想定 INPUT_DPI=${INPUT_DPI}）"
   fi
-  convert "${f}[0]" -resize "${SCALE_PERCENT}%" -units PixelsPerInch -density "${OUTPUT_DPI}" "PNG32:output-PNG/${base}.png"
-  identify -units PixelsPerInch -format "%f | %wx%h | alpha=%A | %x PPI\n" "output-PNG/${base}.png"
+  magick "${f}[0]" -resize "${SCALE_PERCENT}%" -units PixelsPerInch -density "${OUTPUT_DPI}" "PNG32:output-PNG/${base}.png"
+  magick identify -units PixelsPerInch -format "%f | %wx%h | alpha=%A | %x PPI\n" "output-PNG/${base}.png"
   count=$((count + 1))
 done
 echo "done: ${count} file(s)"
