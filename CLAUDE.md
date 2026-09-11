@@ -57,8 +57,9 @@ SCALE_PERCENT=25.6 # カンバスpx縮小率(%)。25.6 = 256‰
 
 - 許可リストは**アプリ/セッション再起動後に反映**される（ホットリロードされない）
 - ブロック時は curl が `403` + `X-Proxy-Error: blocked-by-allowlist` を返す
-- S3がブロックされている場合のCowork迂回: desktop-commander の PowerShell から
-  `curl.exe -s -L -o "D:\...\output-PNG\名前.png" <出力URL>` でPC側ダウンロード → サンドボックスからマウント経由でDPIスタンプ
+- S3がブロックされている場合のCowork迂回: desktop-commander でPC側ダウンロード → サンドボックスからマウント経由でDPIスタンプ
+  - Windows（PowerShell）: `curl.exe -s -L -o "D:\...\output-PNG\名前.png" <出力URL>`
+  - macOS（zsh）: `curl -s -L -o "<リポジトリの絶対パス>/output-PNG/名前.png" <出力URL>`
 
 ## 検証チェックリスト（毎回・全件）
 
@@ -83,6 +84,12 @@ SCALE_PERCENT=25.6 # カンバスpx縮小率(%)。25.6 = 256‰
 ```bash
 convert "input.psd[0]" -resize ${SCALE_PERCENT}% -units PixelsPerInch -density ${OUTPUT_DPI} "PNG32:output.png"
 ```
+
+## macOS（Homebrew）での実行環境
+
+- ImageMagick は `brew install imagemagick`（7系）。7系では `convert` に非推奨警告が出るため、本書の `convert` は `magick` に読み替えてよい（結果は同じ）
+- `scripts/local_fallback.sh` は実行ビットが無いので `bash scripts/local_fallback.sh` で実行する（macOS 標準の bash 3.2 で動作）
+- 検証チェックリスト用の Pillow は venv に入れる（姉妹リポジトリと並べた親フォルダに共有 `.venv` を作ると使い回せる）
 
 ## ライセンス
 

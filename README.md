@@ -21,6 +21,7 @@ PSD画像（72dpi）をカンバスpx数256‰（25.6%）の透過PNG（350dpi�
 - **Adobe for creativity コネクタ**が接続・認証済みであること（縮小処理に使用）
 - Claude Desktopのドメイン許可リストに `*.adobe.com` / `*.adobe.io` / `*.amazonaws.com` を追加済みであること（詳細は `CLAUDE.md`）
 - Adobe不通時は ImageMagick のみのフォールバック（`scripts/local_fallback.sh`）で代替可能
+- macOS では `brew install imagemagick` で ImageMagick を導入し、フォールバックは `bash scripts/local_fallback.sh` で実行する
 
 ## 構成
 
