@@ -42,4 +42,6 @@ for f in input-PSD/*.psd input-PSD/*.PSD; do
   magick identify -units PixelsPerInch -format "%f | %wx%h | alpha=%A | %x PPI\n" "output-PNG/${base}.png"
   count=$((count + 1))
 done
+# 後段: iLoveAPI 圧縮（.env で有効時のみ。python3 が無ければ python）
+(command -v python3 >/dev/null && python3 scripts/iloveapi_compress.py) || python scripts/iloveapi_compress.py || true
 echo "done: ${count} file(s)"

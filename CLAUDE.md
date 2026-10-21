@@ -61,13 +61,29 @@ SCALE_PERCENT=25.6 # カンバスpx縮小率(%)。25.6 = 256‰
   - Windows（PowerShell）: `curl.exe -s -L -o "D:\...\output-PNG\名前.png" <出力URL>`
   - macOS（zsh）: `curl -s -L -o "<リポジトリの絶対パス>/output-PNG/名前.png" <出力URL>`
 
+## 任意の後段: iLoveAPI（iLoveIMG）でさらに圧縮
+
+`scripts/iloveapi_compress.py` が、出力フォルダ内の PNG を iLoveAPI の `compressimage` に通して
+元より小さくなったものだけ置き換える。標準ライブラリのみで動く。変換スクリプト（`scripts/local_fallback.sh`）の
+末尾から自動で呼ばれるので、通常は手で実行しなくてよい。**Adobeハイブリッドで出力した場合は、検証の前に `python3 scripts/iloveapi_compress.py` を手で実行する。**
+
+- `.env` で `ILOVEAPI_COMPRESS=1` と `ILOVEAPI_PUBLIC_KEY=`（https://www.iloveapi.com/ で発行）を設定したときだけ動く。
+  未設定・`0` なら何もしない。`ILOVEAPI_LEVEL` は `low` / `recommended`（既定）/ `extreme`
+- 無料枠は月 2,500 クレジット（1画像 ≈ 1クレジット）。ログ末尾の `remaining_credits` で残量を確認する
+- 安全策: 戻りが PNG でない／寸法が変わった／透過が失われた／元より大きい場合は元ファイルを残す。
+  元にあった pHYs(DPI) チャンクは引き継ぐ（元に無ければ付けない）
+- API へ送るファイル名は常に `image.png`（実ファイル名は外部に出さない）。ファイル内容は iLovePDF の
+  サーバーへ送られ、処理後に削除される（公開情報では1〜2時間）。外部送信が不可の画像では使わない
+- 手動実行: `python3 scripts/iloveapi_compress.py [出力フォルダ]`、自己診断: `--selftest`
+
 ## 検証チェックリスト（毎回・全件）
 
 - PIL で `Image.open(f); im.load()` が通る（**ダウンロード切断の検出**。identify/fileのヘッダ確認では検出不可）
-- `mode=RGBA` かつ、元PSDの背景が透明なら角ピクセルの alpha=0
+- `mode=RGBA`（iLoveAPI 後段を通した場合は透過付き `P` も可）かつ、元PSDの背景が透明なら角ピクセルの alpha=0
 - 寸法が `round(SCALE_PERCENT/100 × 元)` ±1px
 - DPIメタデータ ≈ `OUTPUT_DPI`
 - 入力PSDのdpiが `INPUT_DPI` と一致するか（不一致は警告のみ、処理は続行）
+- （iLoveAPI 後段を使った場合）ログで `remaining_credits` と skip/ERR の有無を確認。出力が元より大きくなった件は `keep` として元のまま残る
 
 ## 既知の落とし穴
 
